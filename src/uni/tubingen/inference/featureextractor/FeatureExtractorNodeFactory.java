@@ -1,4 +1,4 @@
-package uni.tubingen.protein.inference.util;
+package uni.tubingen.inference.featureextractor;
 
 import org.knime.core.node.NodeDialogPane;
 import org.knime.core.node.NodeFactory;

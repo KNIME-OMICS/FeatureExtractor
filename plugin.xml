@@ -18,8 +18,8 @@
          point="org.knime.workbench.repository.nodes">
       <node
             category-path="/"
-            factory-class="uni.tubingen.protein.inference.util.FeatureExtractorNodeFactory"
-            id="uni.tubingen.protein.inference.util.FeatureExtractorNodeFactory"/>
+            factory-class="uni.tubingen.inference.featureextractor.FeatureExtractorNodeFactory"
+            id="uni.tubingen.inference.featureextractor.FeatureExtractorNodeFactory"/>
    </extension>
    
 </plugin>

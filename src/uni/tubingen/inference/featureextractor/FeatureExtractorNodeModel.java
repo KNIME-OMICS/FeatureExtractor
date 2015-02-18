@@ -1,11 +1,9 @@
-package uni.tubingen.protein.inference.util;
+package uni.tubingen.inference.featureextractor;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
@@ -18,6 +16,7 @@ import org.knime.core.data.RowIterator;
 import org.knime.core.data.RowKey;
 import org.knime.core.data.StringValue;
 import org.knime.core.data.def.DefaultRow;
+import org.knime.core.data.def.DoubleCell;
 import org.knime.core.data.def.StringCell;
 import org.knime.core.node.BufferedDataContainer;
 import org.knime.core.node.BufferedDataTable;
@@ -44,7 +43,7 @@ public class FeatureExtractorNodeModel extends NodeModel {
 	//field
 	static BufferedDataContainer container = null;
 	
-	private static HashMap <String, String> peptide2detectability = new HashMap <String, String> (100000);
+	private static HashMap <String, Double> peptide2detectability = new HashMap <String, Double> (100000);
     
     /**
      * Constructor for the node model.
@@ -109,7 +108,13 @@ public class FeatureExtractorNodeModel extends NodeModel {
     			     }	
     			     
     			   //fill map peptide to detectability table
-    			     peptide2detectability.put(sequence, detectability);
+    			   try {
+    				   double detectDbl = Double.parseDouble(detectability);
+    				   // it may happen that a sequence is overwritten, but that's no problem, as it has the same detectability anyway
+        			   peptide2detectability.put(sequence, detectDbl);
+    			   } catch (NumberFormatException x) {
+    			    	x.printStackTrace();
+    			   }
     		    }		   
     		
     	  }
@@ -120,16 +125,15 @@ public class FeatureExtractorNodeModel extends NodeModel {
     	
     	//fill container 
     	if (!peptide2detectability.isEmpty()){
-    	  Set<String> peptides = peptide2detectability.keySet();
-    	     for (String peptide : peptides){
-    	    	    RowKey key = new RowKey(String.valueOf(new Integer(peptide.hashCode())));
-    	            DataCell[] cells = new DataCell[2];	    		
-    	     		cells[0] = new StringCell(peptide);
-    	     		cells[1] = new StringCell(peptide2detectability.get(peptide));
-    	     		DataRow row = new DefaultRow(key, cells);
-    	     		container.addRowToTable(row);
-    	     }
-    		
+    		int id = 0;
+    	  for (Map.Entry<String, Double> mapIt : peptide2detectability.entrySet()) {
+	    	    RowKey key = new RowKey(String.valueOf(id++));
+	            DataCell[] cells = new DataCell[2];
+	     		cells[0] = new StringCell(mapIt.getKey());
+	     		cells[1] = new DoubleCell(mapIt.getValue());
+	     		DataRow row = new DefaultRow(key, cells);
+	     		container.addRowToTable(row);
+    	  }
     	}
     
     	  container.close(); 
@@ -141,7 +145,7 @@ public class FeatureExtractorNodeModel extends NodeModel {
     private DataColumnSpec[]  make_output_spec() {   	
     	DataColumnSpec cols[] = new DataColumnSpec[2];
     	cols[0] = new DataColumnSpecCreator("Peptide", StringCell.TYPE).createSpec();
-    	cols[1] = new DataColumnSpecCreator("Detectability", StringCell.TYPE).createSpec();	
+    	cols[1] = new DataColumnSpecCreator("Detectability", DoubleCell.TYPE).createSpec();	
       return cols;
 	}
 
